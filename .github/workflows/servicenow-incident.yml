@@ -1,0 +1,36 @@
+
+name: ServiceNow Incident CI
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [incident_high_urgency]
+
+jobs:
+  validate-incident:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate incident event
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INCIDENT_NUMBER: ${{ github.event.client_payload.incident_number }}
+          URGENCY: ${{ github.event.client_payload.urgency }}
+          DESCRIPTION: ${{ github.event.client_payload.short_description }}
+        run: |
+          set -e
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            INCIDENT_NUMBER="INC-DEMO"
+            URGENCY="1"
+            DESCRIPTION="Manual pipeline smoke test"
+          fi
+
+          test -n "$INCIDENT_NUMBER"
+          test "$URGENCY" = "1"
+          test -n "$DESCRIPTION"
+
+          echo "Incident: $INCIDENT_NUMBER"
+          echo "Urgency: $URGENCY"
+          echo "Description: $DESCRIPTION"
+          echo "Incident validation passed."
